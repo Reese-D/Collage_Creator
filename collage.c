@@ -21,7 +21,7 @@ int download_jpeg(char* url)
 {
     FILE* fp = fopen("out.jpg", "wb");
     if (!fp){
-        printf("!!! Failed to create file on the disk\n");
+        printf("Failed to create file on the disk\n");
         return 0;
     }
 
@@ -31,12 +31,12 @@ int download_jpeg(char* url)
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, fp);
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, writeFunction);
     curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1);
-    curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, errorBuffer);
+    // curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, errorBuffer);
 
-    #ifdef DEBUG
-      curl_easy_setopt(handle, CURLOPT_VERBOSE, 1);
-      curl_easy_setopt(handle, CURLOPT_HEADER, 1);
-    #endif
+    // #ifdef DEBUG
+    //   curl_easy_setopt(handle, CURLOPT_VERBOSE, 1);
+    //   curl_easy_setopt(handle, CURLOPT_HEADER, 1);
+    // #endif
 
     CURLcode success = curl_easy_perform(handle);
     if (success){
@@ -46,7 +46,7 @@ int download_jpeg(char* url)
 
     long res_code = 0;
     curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &res_code);
-    if (((res_code != 200 || res_code != 201) && success == CURLE_ABORTED_BY_CALLBACK)){
+    if (!((res_code == 200 || res_code == 201) && success != CURLE_ABORTED_BY_CALLBACK)){
         printf("Response code: %lu\n", res_code);
         printf("Error buffer: %s\n", errorBuffer);
         return 0;
@@ -61,15 +61,15 @@ int download_jpeg(char* url)
 int main(int argc, char** argv)
 {
     //TODO read from output file urls, will have to parse json
-    // if (argc < 2){
-    //    printf("Usage: %s <url>\n", argv[0]);
-    //    return -1;
-    // }
-    //
-    // if (!download_jpeg(argv[1])){
-    //     printf("!! Failed to download file: %s\n", argv[1]);
-    //     return -1;
-    // }
+    if (argc < 2){
+       printf("Usage: %s <url>\n", argv[0]);
+       return -1;
+    }
+
+    if (!download_jpeg(argv[1])){
+        printf("!! Failed to download file: %s\n", argv[1]);
+        return -1;
+    }
 
     return 0;
 }
